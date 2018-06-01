@@ -1,5 +1,6 @@
 # esp8266-examples
-ESP8266-examples für Freifunk-IoT
+Bitte beachte die lokalen IPs und Daten-Endpunkte:
+https://github.com/Freifunk-IoT/freifunk-iot-concept/wiki/Zugriffspunkte-und-URLs
 
 ### Temperature and Humidity
 - Plattform: ESP01, Temperatur und Luftfeuchtigkeit mit DHT22/DHT11 auslesen und per MQTT senden.
