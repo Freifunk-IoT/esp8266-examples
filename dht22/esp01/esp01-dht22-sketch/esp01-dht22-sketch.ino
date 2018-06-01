@@ -25,7 +25,7 @@ char sensorId[]="ReplaceId";
 
 const char* ssid = "Freifunk";
 const char* password = "";
-const char* mqtt_server = "freifunk-iot.de";
+const char* mqtt_server = "mqtt.freifunk-iot.de";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
