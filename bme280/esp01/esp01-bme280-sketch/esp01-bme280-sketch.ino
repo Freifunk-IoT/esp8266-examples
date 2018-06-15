@@ -8,6 +8,8 @@
 
  SDA: GPIO0 
  SCL: GPIO2
+
+ You have to change "MQTT_MAX_PACKET_SIZE to at least 512 in your PubSubClient.h (usually under (your arduino folder)\libraries\PubSubClient\src
 */
 
 #include <ESP8266WiFi.h>
@@ -18,7 +20,7 @@
 
 
 //Hier deine Sensor-ID einsetzen:
-char sensorId[]="ReplaceID";
+char sensorId[]="ReplaceId";
 //Hier deinen Sensor-Pin und Typ anpassen anpassen:
 Adafruit_BME280 bme; // BME280 via I2C
 
@@ -31,7 +33,13 @@ const char* mqtt_server = "mqtt.stg.freifunk-iot.de";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-char msg[400];
+char msg[512];
+char str_temp[10];
+char str_humi[10];
+char str_press[10];
+float temperature = 0;
+float humidity = 0;
+float pressure = 0;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -97,33 +105,33 @@ void loop() {
   }
   digitalWrite(LED_BUILTIN, LOW);
   //Read out sensor
-    float temperature = bme.readTemperature();
-    float humidity = bme.readHumidity();
-    float pressure = bme.readPressure();
+    temperature = bme.readTemperature();
+    humidity = bme.readHumidity();
+    pressure = bme.readPressure()/100; //in hPa
     //Make Strings
-    char str_temp[10];
-    char str_humi[10];
-    char str_press[10];
     /* 4 is mininum width, 2 is precision; float value is copied onto str_temp*/
     dtostrf(temperature, 4, 2, str_temp);
     dtostrf(humidity, 4, 2, str_humi);
     dtostrf(pressure, 4, 2, str_press);
     
-    int errorCode = 0;
     //Handle sensor errors
-    if (isnan(humidity) || isnan(temperature)) {
+    if (isnan(humidity) || isnan(temperature) || isnan(pressure)) {
       Serial.println("Failed to read from DHT sensor!");
-      errorCode=1;
-      temperature=1;
-      humidity=1;
       snprintf(msg, sizeof(msg), "{\"%s._error\":2}",sensorId);
     } else {
       //Make JSON-message
-      snprintf(msg, sizeof(msg), "{\"%s.temperature\":%s, \"%s.humidity\":%s, \"%s.pressure\":%s}",sensorId,str_temp,sensorId,str_humi,sensorId,str_press,sensorId);
+      snprintf(msg, sizeof(msg), "{\"%s.temperature\":%s, \"%s.humidity\":%s, \"%s.pressure\":%s, \"%s._error\":0}",sensorId,str_temp,sensorId,str_humi,sensorId,str_press,sensorId);
     }
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("iot_input", msg);
+    if(client.publish("iot_input", msg, strlen(msg))) {  
+    } else {
+      //Handle transmit errors as far as possible (Buffer Overflows)
+      snprintf(msg, sizeof(msg), "{\"%s._error\":100,\"%s._debug\":\"MQTT Error\"}",sensorId, sensorId);
+      Serial.print("Publish message: ");
+      Serial.println(msg);
+      client.publish("iot_input", msg);
+    }
     //Wait for transmit
     client.loop();
     delay(2000);
