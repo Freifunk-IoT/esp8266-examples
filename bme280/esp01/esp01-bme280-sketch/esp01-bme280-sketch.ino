@@ -6,7 +6,7 @@
  Connects via I2C
  by Marvin Gaube <dev@marvingaube.de>
 
- SDA: GPIO0 
+ SDA: GPIO0
  SCL: GPIO2
 
  You have to change "MQTT_MAX_PACKET_SIZE to at least 512 in your PubSubClient.h (usually under (your arduino folder)\libraries\PubSubClient\src
@@ -26,8 +26,12 @@ Adafruit_BME280 bme; // BME280 via I2C
 
 // Config for FFS-IoT
 
+
 const char* ssid = "Freifunk";
-const char* password = "";
+// if you use an open SSID
+const char* password = NULL;
+// if you use a protected SSID
+// const char* password = "yourwifipassword";
 const char* mqtt_server = "mqtt.stg.freifunk-iot.de";
 
 WiFiClient espClient;
@@ -44,8 +48,8 @@ float pressure = 0;
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
-  Wire.pins(0, 2);           
-  Wire.begin();  
+  Wire.pins(0, 2);
+  Wire.begin();
    setup_wifi();
   client.setServer(mqtt_server, 1883);
 }
@@ -57,7 +61,7 @@ void setup_wifi() {
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
- 
+
  //only Station, no AP
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -115,7 +119,7 @@ void loop() {
     dtostrf(temperature, 4, 2, str_temp);
     dtostrf(humidity, 4, 2, str_humi);
     dtostrf(pressure, 4, 2, str_press);
-    
+
     //Handle sensor errors
     if (isnan(humidity) || isnan(temperature) || isnan(pressure)) {
       Serial.println("Failed to read from DHT sensor!");
@@ -126,7 +130,7 @@ void loop() {
     }
     Serial.print("Publish message: ");
     Serial.println(msg);
-    if(client.publish("iot_input", msg, strlen(msg))) {  
+    if(client.publish("iot_input", msg, strlen(msg))) {
     } else {
       //Handle transmit errors as far as possible (Buffer Overflows)
       snprintf(msg, sizeof(msg), "{\"%s._error\":100,\"%s._debug\":\"MQTT Error\"}",sensorId, sensorId);
@@ -138,7 +142,7 @@ void loop() {
     client.loop();
     delay(2000);
     digitalWrite(LED_BUILTIN, HIGH);
-    
+
     //If you have the "Deep Sleep mod" uncomment
     //ESP.deepSleep(30e6);
     //else normal delay 30s

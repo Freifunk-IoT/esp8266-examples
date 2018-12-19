@@ -16,16 +16,21 @@
 //Hier deine Sensor-ID einsetzen:
 char sensorId[]="ReplaceId";
 //Hier deinen Sensor-Pin und Typ anpassen anpassen:
-#define DHTPIN            2 
+#define DHTPIN            2
 //#define DHTTYPE DHT11   // DHT 11
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 // Config for FFS-IoT
 
+
 const char* ssid = "Freifunk";
-const char* password = "";
-const char* mqtt_server = "mqtt.stg.freifunk-iot.de";
+// if you use an open SSID
+const char* password = NULL;
+// if you use a protected SSID
+// const char* password = "yourwifipassword";
+
+const char* mqtt_server = "demo.freifunk-iot.de";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -102,7 +107,7 @@ void loop() {
     //Wait for transmit
     delay(2000);
     digitalWrite(LED_BUILTIN, HIGH);
-    
+
     //If you have the "Deep Sleep mod" uncomment
     //ESP.deepSleep(30e6);
     //else normal delay 30s
