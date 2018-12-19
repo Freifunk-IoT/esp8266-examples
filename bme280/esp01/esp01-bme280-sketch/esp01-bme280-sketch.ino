@@ -32,7 +32,7 @@ const char* ssid = "Freifunk";
 const char* password = NULL;
 // if you use a protected SSID
 // const char* password = "yourwifipassword";
-const char* mqtt_server = "mqtt.stg.freifunk-iot.de";
+const char* mqtt_server = "demo.freifunk-iot.de";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
