@@ -17,6 +17,11 @@ char sensorId[]="replaceId";
 // Insert here where your moisture sensor is connected
 int sensorPin = A0;
 
+// Raw value when sensor is completly dry
+int calibration_dry = 821;
+// Raw value when value is completly wet
+int calibration_wet = 360;
+
 // Config for FFS-IoT
 
 const char* ssid = "Freifunk";
@@ -34,6 +39,8 @@ PubSubClient client(espClient);
 char msg[512];
 char str_raw[10];
 int raw_moisture = 0;
+char str_rel[10];
+int relative_moisture = 0;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -91,9 +98,11 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   //Read out sensor
     raw_moisture = analogRead(sensorPin);
+    relative_moisture = map(raw_moisture, calibration_dry, calibration_wet, 0, 100);
     //Make Strings
     /* 4 is mininum width, 2 is precision; float value is copied onto str_raw*/
     dtostrf(raw_moisture, 4, 2, str_raw);
+    dtostrf(relative_moisture, 4, 2, str_rel);
     
     //Handle sensor errors
     if (isnan(raw_moisture)) {
@@ -101,7 +110,7 @@ void loop() {
       snprintf(msg, sizeof(msg), "{\"%s._error\":2}",sensorId);
     } else {
       //Make JSON-message
-      snprintf(msg, sizeof(msg), "{\"%s.raw_moisture\":%s, \"%s._error\":0}",sensorId,str_raw,sensorId);
+      snprintf(msg, sizeof(msg), "{\"%s.raw_moisture\":%s, \"%s.relative_moisture\":%s, \"%s._error\":0}",sensorId,str_raw,sensorId,str_rel,sensorId);
     }
     Serial.print("Publish message: ");
     Serial.println(msg);
